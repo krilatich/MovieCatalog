@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">movieCatalog</string>
+    <string name="mc_logo">mc_logo</string>
+    <string name="MovieCatalog">MovieCatalog</string>
+    <string name="Registration">Регистрация</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+
+    <string name="name">Имя</string>
+    <string name="e_mail">E-mail</string>
+    <string name="password_confirm">Подтвердите пароль</string>
+    <string name="birth_date">Дата рождения</string>
+    <string name="male">Мужчина</string>
+    <string name="female">Женщина</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="have_account">У меня уже есть аккаунт</string>
+</resources>
