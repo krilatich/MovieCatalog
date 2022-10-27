@@ -1,15 +1,13 @@
 package com.example.moviecatalog
 
+
 import android.app.DatePickerDialog
-
 import android.os.Bundle
-
 import android.widget.DatePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.Modifier
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,33 +17,27 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusDirection
-
-
 import androidx.compose.ui.graphics.vector.ImageVector
-
-
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
+import com.example.moviecatalog.data.Gender
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
-
-
-
 import java.util.*
 
 class MainActivity : ComponentActivity() {
@@ -55,7 +47,7 @@ class MainActivity : ComponentActivity() {
             MovieCatalogTheme {
                 // A surface container using the 'background' color from the theme
 
-                SignUpScreen()
+                Navigation()
             }
         }
     }
@@ -276,7 +268,9 @@ fun EditField(
     OutlinedTextField(
         value = value,
         singleLine = true,
-        modifier = modifier.fillMaxWidth().height(56.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp),
         onValueChange = onValueChanged,
         label = { Text(stringResource(label),
             color = MaterialTheme.colors.secondary,
@@ -309,7 +303,9 @@ fun PasswordEditField(
     OutlinedTextField(
         value = value,
         singleLine = true,
-        modifier = modifier.fillMaxWidth().height(56.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp),
         onValueChange = onValueChanged,
         label = { Text(stringResource(label),
             color = MaterialTheme.colors.secondary,

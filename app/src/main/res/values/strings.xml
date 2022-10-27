@@ -14,4 +14,6 @@
     <string name="female">Женщина</string>
     <string name="register">Зарегистрироваться</string>
     <string name="have_account">У меня уже есть аккаунт</string>
+    <string name="LogIn">Войти</string>
+    <string name="SignUp">Регистрация</string>
 </resources>
