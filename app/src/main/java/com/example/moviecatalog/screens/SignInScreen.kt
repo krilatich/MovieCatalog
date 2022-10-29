@@ -102,7 +102,9 @@ fun SignInScreen(navController: NavController){
         Spacer(Modifier.height(200.dp))
 
 
-        Button(onClick = {},modifier = Modifier
+        Button(onClick = {
+                navController.navigate("main_screen")
+        },modifier = Modifier
             .fillMaxWidth(1f)
             .height(40.dp),
             colors = ButtonDefaults.buttonColors(

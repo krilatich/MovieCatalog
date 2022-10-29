@@ -3,6 +3,7 @@ package com.example.moviecatalog.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,14 +17,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.moviecatalog.NavigationBottomBar
 import com.example.moviecatalog.R
+import com.example.moviecatalog.RatingIcon
 import com.example.moviecatalog.data.DataSource
 import com.example.moviecatalog.data.Favorite
+import com.example.moviecatalog.data.Movie
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .background(MaterialTheme.colors.background)
@@ -35,7 +41,7 @@ fun MainScreen() {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(200.dp)){
+                .height(150.dp)){
             Image(
                 modifier = Modifier
                     .fillMaxSize()
@@ -73,6 +79,7 @@ fun MainScreen() {
 
         }
 
+        Spacer(Modifier.height(10.dp))
 
 
             Text(
@@ -88,13 +95,27 @@ fun MainScreen() {
         FavoriteList(favoritesList = DataSource().favoritesList())
 
 
-        Column(Modifier.padding(20.dp)) {
+        Column(
+            Modifier
+                .padding(start = 20.dp)
+                .height(270.dp)
+                ) {
 
+            Text(
+                text = "Галерея",
+                style = MaterialTheme.typography.h1,
+                color = MaterialTheme.colors.primary,
+                modifier = Modifier
+                    .align(Alignment.Start)
+            )
 
-
-
-
+                MovieList(movieList = DataSource().movieList())
         }
+
+        Spacer(Modifier.weight(1f))
+        NavigationBottomBar(navController = navController)
+
+
 
 
 
@@ -108,8 +129,8 @@ fun MainScreen() {
 fun FavoriteMovie(movie:Favorite){
     Box(
         Modifier
-            .height(180.dp)
-            .width((120.dp))
+            .height(160.dp)
+            .width(100.dp)
     ){
         Image(
             modifier = Modifier
@@ -117,7 +138,7 @@ fun FavoriteMovie(movie:Favorite){
             //.align(alignment = Alignment.TopCenter)
             ,
             contentScale = ContentScale.Crop,
-            painter = painterResource(movie.image),
+            painter = painterResource(movie.poster),
             contentDescription = "favoriteMovieImage"
         )
         IconButton(
@@ -127,6 +148,74 @@ fun FavoriteMovie(movie:Favorite){
         }
     }
 }
+
+
+@Composable
+fun Movie(movie:Movie){
+
+    Row(modifier = Modifier.fillMaxWidth()){
+
+        Image(
+            modifier = Modifier
+                .height(160.dp)
+                .width(100.dp)
+            //.align(alignment = Alignment.TopCenter)
+            ,
+            contentScale = ContentScale.Crop,
+            painter = painterResource(movie.poster),
+            contentDescription = "movieImage"
+        )
+
+        Column(modifier = Modifier
+            .padding(10.dp))
+        {
+
+            Text(
+                text = movie.name,
+                style = MaterialTheme.typography.h2,
+                color = MaterialTheme.colors.secondary,
+                modifier = Modifier
+
+            )
+            Row(){
+                Text(
+                    text = movie.year.toString(),
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.secondary,
+                    modifier = Modifier
+
+                )
+                Text(
+                    text = movie.country,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.secondary,
+                    modifier = Modifier
+
+                )
+            }
+
+            Row(){
+                for(genre in movie.genres) Text(
+                    text = genre,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.secondary,
+                    modifier = Modifier
+
+                )
+            }
+
+            Spacer(Modifier.height(50.dp))
+
+            RatingIcon(rating = 10.0)
+
+
+
+
+        }
+    }
+
+}
+
 
 @Composable
 private fun FavoriteList(favoritesList: List<Favorite>, modifier: Modifier = Modifier){
@@ -140,10 +229,22 @@ private fun FavoriteList(favoritesList: List<Favorite>, modifier: Modifier = Mod
 }
 
 @Composable
+private fun MovieList(movieList: List<Movie>, modifier: Modifier = Modifier){
+    LazyColumn(){
+        items(movieList){
+                movie: Movie ->
+            Movie(movie = movie)
+        }
+    }
+
+}
+
+
+@Composable
 @Preview
 fun Preview2(){
     MovieCatalogTheme {
-        MainScreen()
+        MainScreen(navController = rememberNavController())
     }
 
 }

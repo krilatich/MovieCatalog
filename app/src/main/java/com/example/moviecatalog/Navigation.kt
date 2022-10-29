@@ -6,9 +6,7 @@ import androidx.navigation.compose.composable
 
 
 import androidx.navigation.compose.rememberNavController
-import com.example.moviecatalog.screens.SignInScreen
-import com.example.moviecatalog.screens.SignUpScreen
-import com.example.moviecatalog.screens.SplashScreen
+import com.example.moviecatalog.screens.*
 
 
 @Composable
@@ -24,6 +22,12 @@ fun Navigation(){
         }
         composable(Screen.SignUpScreen.route){
             SignUpScreen(navController = navController)
+        }
+        composable(Screen.MainScreen.route){
+            MainScreen(navController = navController)
+        }
+        composable(Screen.ProfileScreen.route){
+            ProfileScreen(navController = navController)
         }
 
     }

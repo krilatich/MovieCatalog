@@ -1,33 +1,39 @@
 package com.example.moviecatalog
 
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.widget.DatePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
+import com.example.moviecatalog.ui.theme.Orange200
+import com.example.moviecatalog.ui.theme.White200
+import com.example.moviecatalog.ui.theme.barColor
 import java.util.*
 
 class MainActivity : ComponentActivity() {
@@ -205,3 +211,86 @@ fun DateField(
 
 }
 
+@SuppressLint("ResourceType")
+@Composable
+fun NavigationBottomBar(navController: NavController,modifier: Modifier = Modifier){
+    Row(
+        Modifier
+            .background(color = barColor)
+            .height(50.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically){
+
+            Column(verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.clickable(onClick = {navController.navigate("main_screen")})) {
+                Icon(
+                    Icons.Filled.Home,
+                    contentDescription = "HomeIcon",
+                    tint = if(navController.currentDestination?.route == Screen.MainScreen.route)
+                        MaterialTheme.colors.primary
+                    else MaterialTheme.colors.secondary
+            )
+                Text(
+                    text = "Главное",
+                    style = MaterialTheme.typography.body1,
+                    color = if(navController.currentDestination?.route == Screen.MainScreen.route)
+                        MaterialTheme.colors.primary
+                                else MaterialTheme.colors.secondary,
+                    )
+
+            }
+
+        Column(verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.clickable(onClick = {navController.navigate("profile_screen")})) {
+            Icon(
+                Icons.Filled.Person,
+                contentDescription = "PersonIcon",
+                tint = if(navController.currentDestination?.route == Screen.ProfileScreen.route)
+                    MaterialTheme.colors.primary
+                else MaterialTheme.colors.secondary
+            )
+            Text(
+                text = "Профиль",
+                style = MaterialTheme.typography.body1,
+                color = if(navController.currentDestination?.route == Screen.ProfileScreen.route)
+                    MaterialTheme.colors.primary
+                else MaterialTheme.colors.secondary,
+            )
+
+        }
+
+
+    }
+}
+
+
+@Composable
+fun RatingIcon(rating: Double){
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = if (rating<4) Color.Red
+        else if (rating<6) Orange200
+        else if(rating<8) Color.Yellow
+        else Color.Green
+    ) {
+        Text(
+            text = rating.toString(),
+            style = MaterialTheme.typography.body2,
+            color = White200,
+            modifier = Modifier.padding(start = 5.dp,end = 5.dp)
+        )
+    }
+
+}
+
+
+@Preview
+@Composable
+fun Pr(){
+    MovieCatalogTheme {
+       RatingIcon(10.0)
+    }
+}
