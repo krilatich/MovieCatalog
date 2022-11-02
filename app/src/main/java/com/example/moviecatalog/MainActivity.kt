@@ -30,6 +30,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.moviecatalog.screens.MovieScreen
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 import com.example.moviecatalog.ui.theme.Orange200
 import com.example.moviecatalog.ui.theme.White200
@@ -61,7 +63,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun EditField(
-    @StringRes label: Int,
+    @StringRes label: Int = R.string.Empty,
     keyboardOptions: KeyboardOptions,
     keyboardActions: KeyboardActions,
     value: String,
@@ -95,7 +97,7 @@ fun EditField(
 
 @Composable
 fun PasswordEditField(
-    @StringRes label: Int,
+    @StringRes label: Int = R.string.Empty,
     keyboardOptions: KeyboardOptions,
     keyboardActions: KeyboardActions,
     value: String,
@@ -114,7 +116,7 @@ fun PasswordEditField(
         label = { Text(stringResource(label),
             color = MaterialTheme.colors.secondary,
             style = MaterialTheme.typography.body1
-        )
+                )
                 },
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -180,6 +182,7 @@ fun ReadonlyTextField(
 @Composable
 fun DateField(
     mDate : MutableState<String>,
+    label: Int = R.string.Empty
     )
 {
     val mContext = LocalContext.current
@@ -204,7 +207,7 @@ fun DateField(
         value = mDate.value,
         onValueChange = {mDate.value = it},
         onClick = { mDatePickerDialog.show() },
-        label = R.string.birth_date,
+        label = label,
         image = Icons.Default.DateRange
     )
 
@@ -291,6 +294,6 @@ fun RatingIcon(rating: Double){
 @Composable
 fun Pr(){
     MovieCatalogTheme {
-       RatingIcon(10.0)
+        MovieScreen(rememberNavController())
     }
 }

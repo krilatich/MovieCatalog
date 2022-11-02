@@ -35,7 +35,13 @@ val Typography = Typography(
             Font(R.font.ibmplex_medium) ,
         ),
         fontSize = 14.sp
-    )
+    ),
+    caption = TextStyle(
+        fontFamily = FontFamily(
+            Font(R.font.ibmplex_bold) ,
+        ),
+        fontSize = 24.sp
+    ),
     /* Other default text styles to override
     button = TextStyle(
         fontFamily = FontFamily.Default,

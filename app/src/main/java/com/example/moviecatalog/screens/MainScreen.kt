@@ -1,7 +1,6 @@
 package com.example.moviecatalog.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,10 +29,14 @@ import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 
 @Composable
 fun MainScreen(navController: NavController) {
-    Column(
+    Scaffold(bottomBar = {NavigationBottomBar(navController = navController)}) {
+
+        Column(
         modifier = Modifier
             .background(MaterialTheme.colors.background)
-            .fillMaxSize(1f),
+            .fillMaxSize(1f)
+            .verticalScroll(rememberScrollState())
+            ,
         verticalArrangement = Arrangement.spacedBy(5.dp)
     )
     {
@@ -41,11 +44,12 @@ fun MainScreen(navController: NavController) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(150.dp)){
+                .height(150.dp)
+        ) {
             Image(
                 modifier = Modifier
                     .fillMaxSize()
-                    //.align(alignment = Alignment.TopCenter)
+                //.align(alignment = Alignment.TopCenter)
                 ,
                 contentScale = ContentScale.Crop,
                 painter = painterResource(id = R.drawable.top_picture),
@@ -54,7 +58,8 @@ fun MainScreen(navController: NavController) {
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(35.dp)) {
+                    .padding(35.dp)
+            ) {
                 Button(
                     onClick = {
                         //navController.navigate("")
@@ -65,7 +70,7 @@ fun MainScreen(navController: NavController) {
                         backgroundColor = MaterialTheme.colors.primary,
                     ),
                     shape = RoundedCornerShape(4.dp),
-                    elevation = ButtonDefaults.elevation(0.dp)
+                    elevation = ButtonDefaults.elevation(0.dp),
                 )
                 {
                     Text(
@@ -82,14 +87,14 @@ fun MainScreen(navController: NavController) {
         Spacer(Modifier.height(10.dp))
 
 
-            Text(
-                text = "Избранное",
-                style = MaterialTheme.typography.h1,
-                color = MaterialTheme.colors.primary,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(start = 20.dp)
-            )
+        Text(
+            text = "Избранное",
+            style = MaterialTheme.typography.h1,
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(start = 20.dp)
+        )
 
 
         FavoriteList(favoritesList = DataSource().favoritesList())
@@ -98,8 +103,8 @@ fun MainScreen(navController: NavController) {
         Column(
             Modifier
                 .padding(start = 20.dp)
-                .height(270.dp)
-                ) {
+
+        ) {
 
             Text(
                 text = "Галерея",
@@ -109,16 +114,17 @@ fun MainScreen(navController: NavController) {
                     .align(Alignment.Start)
             )
 
-                MovieList(movieList = DataSource().movieList())
+            MovieList(
+                movieList = DataSource().movieList(),
+                modifier = Modifier.height(500.dp),
+                navController = navController)
         }
 
-        Spacer(Modifier.weight(1f))
-        NavigationBottomBar(navController = navController)
+        //Spacer(Modifier.weight(1f))
+        // NavigationBottomBar(navController = navController)
 
 
-
-
-
+    }
         }
     }
 
@@ -151,9 +157,10 @@ fun FavoriteMovie(movie:Favorite){
 
 
 @Composable
-fun Movie(movie:Movie){
+fun Movie(movie:Movie,navController: NavController){
 
-    Row(modifier = Modifier.fillMaxWidth()){
+    Row(modifier = Modifier.fillMaxWidth()
+        .clickable{navController.navigate("movie_screen")}){
 
         Image(
             modifier = Modifier
@@ -229,11 +236,11 @@ private fun FavoriteList(favoritesList: List<Favorite>, modifier: Modifier = Mod
 }
 
 @Composable
-private fun MovieList(movieList: List<Movie>, modifier: Modifier = Modifier){
-    LazyColumn(){
+private fun MovieList(movieList: List<Movie>, modifier: Modifier = Modifier,navController: NavController){
+    LazyColumn(modifier){
         items(movieList){
                 movie: Movie ->
-            Movie(movie = movie)
+            Movie(movie = movie, navController = navController)
         }
     }
 

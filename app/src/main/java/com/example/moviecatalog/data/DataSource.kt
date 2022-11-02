@@ -61,6 +61,48 @@ class DataSource {
         }
 
 
+    fun reviewList(): List<Review> {
+        return listOf<Review>(
+            Review(
+                rating = 1.0,
+                reviewText = "Сразу скажу, что фильм мне понравился. " +
+                        "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
+                isAnonymous = false,
+                createDateTime = "2022-11-02T14:42:37.733Z",
+                author = Author(userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                nickName = "Test",avatar = R.drawable.profile_image)
+            ),
+            Review(
+                rating = 1.0,
+                reviewText = "Сразу скажу, что фильм мне понравился. " +
+                        "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
+                isAnonymous = false,
+                createDateTime = "2022-11-02T14:42:37.733Z",
+                author = Author(userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    nickName = "Test",avatar = R.drawable.profile_image)
+            ),
+            Review(
+                rating = 1.0,
+                reviewText = "Сразу скажу, что фильм мне понравился. " +
+                        "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
+                isAnonymous = false,
+                createDateTime = "2022-11-02T14:42:37.733Z",
+                author = Author(userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    nickName = "Test",avatar = R.drawable.profile_image)
+            ),
+            Review(
+                rating = 1.0,
+                reviewText = "Сразу скажу, что фильм мне понравился. " +
+                        "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
+                isAnonymous = false,
+                createDateTime = "2022-11-02T14:42:37.733Z",
+                author = Author(userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    nickName = "Test",avatar = R.drawable.profile_image)
+            ),
+
+        )
+    }
+
 
 
 }

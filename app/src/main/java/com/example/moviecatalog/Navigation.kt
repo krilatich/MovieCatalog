@@ -29,6 +29,9 @@ fun Navigation(){
         composable(Screen.ProfileScreen.route){
             ProfileScreen(navController = navController)
         }
+        composable(Screen.MovieScreen.route){
+            MovieScreen(navController = navController)
+        }
 
     }
 

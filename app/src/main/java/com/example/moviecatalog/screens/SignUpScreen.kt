@@ -135,7 +135,7 @@ fun SignUpScreen(navController: NavController){
             onValueChanged = { passwordConfirmInput = it },
         )
 
-        DateField(birthDateInput)
+        DateField(birthDateInput,R.string.birth_date)
 
         Spacer(Modifier.height(4.dp))
 
