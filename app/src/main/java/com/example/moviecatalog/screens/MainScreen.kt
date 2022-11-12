@@ -1,5 +1,6 @@
 package com.example.moviecatalog.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.moviecatalog.NavigationBottomBar
-import com.example.moviecatalog.R
 import com.example.moviecatalog.RatingIcon
 import com.example.moviecatalog.data.DataSource
 import com.example.moviecatalog.data.Favorite
@@ -27,6 +28,7 @@ import com.example.moviecatalog.data.Movie
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun MainScreen(navController: NavController) {
     Scaffold(bottomBar = {NavigationBottomBar(navController = navController)}) {
@@ -44,16 +46,17 @@ fun MainScreen(navController: NavController) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(150.dp)
+                .height(160.dp)
         ) {
             Image(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                 //.align(alignment = Alignment.TopCenter)
                 ,
                 contentScale = ContentScale.Crop,
-                painter = painterResource(id = R.drawable.top_picture),
+                painter = painterResource(DataSource().movieList().first().poster),
                 contentDescription = "topPictureLabel"
+
             )
             Box(
                 Modifier
@@ -62,7 +65,7 @@ fun MainScreen(navController: NavController) {
             ) {
                 Button(
                     onClick = {
-                        //navController.navigate("")
+                        navController.navigate("movie_screen")
                     }, modifier = Modifier
                         .height(40.dp)
                         .width(130.dp),
@@ -87,6 +90,7 @@ fun MainScreen(navController: NavController) {
         Spacer(Modifier.height(10.dp))
 
 
+        if(DataSource().favoritesList().isNotEmpty())
         Text(
             text = "Избранное",
             style = MaterialTheme.typography.h1,
@@ -95,7 +99,6 @@ fun MainScreen(navController: NavController) {
                 .align(Alignment.Start)
                 .padding(start = 20.dp)
         )
-
 
         FavoriteList(favoritesList = DataSource().favoritesList())
 
@@ -114,10 +117,15 @@ fun MainScreen(navController: NavController) {
                     .align(Alignment.Start)
             )
 
+
+            val movieList = DataSource().movieList().toMutableList()
+            movieList.removeAt(0)
             MovieList(
-                movieList = DataSource().movieList(),
+                movieList = movieList,
                 modifier = Modifier.height(500.dp),
                 navController = navController)
+
+
         }
 
         //Spacer(Modifier.weight(1f))
@@ -141,14 +149,15 @@ fun FavoriteMovie(movie:Favorite){
         Image(
             modifier = Modifier
                 .fillMaxSize()
+                .clip(RoundedCornerShape(30))
             //.align(alignment = Alignment.TopCenter)
             ,
             contentScale = ContentScale.Crop,
             painter = painterResource(movie.poster),
-            contentDescription = "favoriteMovieImage"
+            contentDescription = "favoriteMovieImage",
         )
         IconButton(
-            modifier = Modifier.align(Alignment.TopEnd),
+            modifier = Modifier.align(Alignment.TopEnd).width(30.dp),
             onClick = {  }) {
             Icon(Icons.Outlined.Close, contentDescription = "Удалить из избранных")
         }
@@ -156,6 +165,7 @@ fun FavoriteMovie(movie:Favorite){
 }
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun Movie(movie:Movie,navController: NavController){
 
@@ -192,6 +202,15 @@ fun Movie(movie:Movie,navController: NavController){
                     modifier = Modifier
 
                 )
+
+                Text(
+                    text = " • ",
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.secondary,
+                    modifier = Modifier
+
+                )
+
                 Text(
                     text = movie.country,
                     style = MaterialTheme.typography.body1,
@@ -202,13 +221,23 @@ fun Movie(movie:Movie,navController: NavController){
             }
 
             Row(){
-                for(genre in movie.genres) Text(
-                    text = genre,
-                    style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.secondary,
-                    modifier = Modifier
+                for(genre in movie.genres) {
+                    Text(
+                        text = genre,
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.secondary,
+                        modifier = Modifier
 
-                )
+                    )
+                    if(genre != movie.genres.last())
+                    Text(
+                        text = ", ",
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.secondary,
+                        modifier = Modifier
+
+                    )
+                }
             }
 
             Spacer(Modifier.height(50.dp))

@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.moviecatalog.EditField
 import com.example.moviecatalog.PasswordEditField
 import com.example.moviecatalog.R
+import com.example.moviecatalog.ui.theme.Black200
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 
 @Composable
@@ -40,6 +39,22 @@ fun SignInScreen(navController: NavController){
 
     var loginInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
+
+    val openDialog = remember { mutableStateOf(false) }
+
+
+
+    val errorList = mutableListOf<String>()
+
+    var error:String? = loginErrors(loginInput)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    error = passwordErrors(passwordInput)
+    if(error!=null) {
+        errorList.add(error)
+    }
+
 
 
 
@@ -103,20 +118,27 @@ fun SignInScreen(navController: NavController){
 
 
         Button(onClick = {
+            if(errorList.isNotEmpty())
+                openDialog.value = true
+            else
                 navController.navigate("main_screen")
         },modifier = Modifier
             .fillMaxWidth(1f)
             .height(40.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.background
-            ),
-            border =  BorderStroke(1.dp, MaterialTheme.colors.secondary),
+            colors = if (errorList.isEmpty()) ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.primary
+            ) else
+                ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.background
+                ),
+            border =  if(errorList.isEmpty()) null else BorderStroke(1.dp, MaterialTheme.colors.secondary),
             shape = RoundedCornerShape(4.dp)
         )
         {
             Text(
                 text = stringResource(R.string.LogIn),
-                color = MaterialTheme.colors.primary,
+                color = if(errorList.isEmpty()) Color.White
+                else MaterialTheme.colors.primary,
                 style = MaterialTheme.typography.body2
             )
 
@@ -128,9 +150,9 @@ fun SignInScreen(navController: NavController){
             .fillMaxWidth(1f)
             .height(40.dp),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.background
-
-            ),
+                    backgroundColor = MaterialTheme.colors.background
+                ),
+            border =  null,
             shape = RoundedCornerShape(4.dp),
             elevation = ButtonDefaults.elevation(0.dp)
         )
@@ -146,6 +168,26 @@ fun SignInScreen(navController: NavController){
 
 
     }
+
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                openDialog.value = false
+            },
+            title = { Text(text = "Ошибки", color = Black200) },
+            text = { Column() {
+                for(i in errorList) Text(i,color = Black200)
+            } },
+            buttons = {
+                Button(
+                    onClick = { openDialog.value = false }
+                ) {
+                    Text("OK", style = MaterialTheme.typography.h1)
+                }
+            }
+        )
+    }
+
 
 }
 

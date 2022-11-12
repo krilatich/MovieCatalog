@@ -4,6 +4,9 @@ import com.example.moviecatalog.R
 
 class DataSource {
 
+
+
+
     fun favoritesList(): List<Favorite> {
         return listOf<Favorite>(
             Favorite(R.drawable.favorite_image),
@@ -22,40 +25,46 @@ class DataSource {
         fun movieList(): List<Movie> {
             return listOf<Movie>(
                 Movie(
-                    poster = R.drawable.favorite_image,
-                    name = "NAME", year = 1999,
+                    poster = R.drawable.top_picture,
+                    name = "Name", year = 1999,
                     country = "COUNTRY",
-                    listOf("GENRE1", "GENRE2")
+                    listOf("genre1", "genre2")
                 ),
                 Movie(
                     poster = R.drawable.favorite_image,
-                    name = "NAME", year = 1999,
+                    name = "Name", year = 1999,
                     country = "COUNTRY",
-                    listOf("GENRE1", "GENRE2")
+                    listOf("genre1", "genre2")
                 ),
                 Movie(
                     poster = R.drawable.favorite_image,
-                    name = "NAME", year = 1999,
+                    name = "Name", year = 1999,
                     country = "COUNTRY",
-                    listOf("GENRE1", "GENRE2")
+                    listOf("genre1", "genre2")
                 ),
                 Movie(
                     poster = R.drawable.favorite_image,
-                    name = "NAME", year = 1999,
+                    name = "Name", year = 1999,
                     country = "COUNTRY",
-                    listOf("GENRE1", "GENRE2")
+                    listOf("genre1", "genre2")
                 ),
                 Movie(
                     poster = R.drawable.favorite_image,
-                    name = "NAME", year = 1999,
+                    name = "Name", year = 1999,
                     country = "COUNTRY",
-                    listOf("GENRE1", "GENRE2")
+                    listOf("genre1", "genre2")
                 ),
                 Movie(
                     poster = R.drawable.favorite_image,
-                    name = "NAME", year = 1999,
+                    name = "Name", year = 1999,
                     country = "COUNTRY",
-                    listOf("GENRE1", "GENRE2")
+                    listOf("genre1", "genre2")
+                ),
+                Movie(
+                    poster = R.drawable.favorite_image,
+                    name = "Name", year = 1999,
+                    country = "COUNTRY",
+                    listOf("genre1", "genre2")
                 ),
             )
         }
@@ -73,7 +82,7 @@ class DataSource {
                 nickName = "Test",avatar = R.drawable.profile_image)
             ),
             Review(
-                rating = 1.0,
+                rating = 10.0,
                 reviewText = "Сразу скажу, что фильм мне понравился. " +
                         "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
                 isAnonymous = false,
@@ -82,7 +91,7 @@ class DataSource {
                     nickName = "Test",avatar = R.drawable.profile_image)
             ),
             Review(
-                rating = 1.0,
+                rating = 4.0,
                 reviewText = "Сразу скажу, что фильм мне понравился. " +
                         "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
                 isAnonymous = false,
@@ -91,7 +100,7 @@ class DataSource {
                     nickName = "Test",avatar = R.drawable.profile_image)
             ),
             Review(
-                rating = 1.0,
+                rating = 7.0,
                 reviewText = "Сразу скажу, что фильм мне понравился. " +
                         "Люблю Фримэна, уважаю Роббинса. Читаю Кинга. Но рецензия красненькая.",
                 isAnonymous = false,

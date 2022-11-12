@@ -210,8 +210,6 @@ fun DateField(
         label = label,
         image = Icons.Default.DateRange
     )
-
-
 }
 
 @SuppressLint("ResourceType")
@@ -271,7 +269,7 @@ fun NavigationBottomBar(navController: NavController,modifier: Modifier = Modifi
 
 
 @Composable
-fun RatingIcon(rating: Double){
+fun RatingIcon(rating: Double,isReview: Boolean = false,modifier: Modifier = Modifier){
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = if (rating<4) Color.Red
@@ -280,10 +278,11 @@ fun RatingIcon(rating: Double){
         else Color.Green
     ) {
         Text(
-            text = rating.toString(),
+            text = if(isReview) rating.toInt().toString()
+            else rating.toString(),
             style = MaterialTheme.typography.body2,
             color = White200,
-            modifier = Modifier.padding(start = 5.dp,end = 5.dp)
+            modifier = modifier.padding(start = 5.dp,end = 5.dp)
         )
     }
 

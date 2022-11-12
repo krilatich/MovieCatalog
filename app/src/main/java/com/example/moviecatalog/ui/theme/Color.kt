@@ -8,3 +8,5 @@ val Grey200 = Color(0xFFD1D1D1)
 val detailColor = Color(0xFFB3B3B3)
 val White200 = Color(0xFFFFFFFF)
 val barColor = Color(0xFF1C1A19)
+
+val dialogColor = Color(0xFF282828)

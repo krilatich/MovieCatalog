@@ -1,5 +1,6 @@
 package com.example.moviecatalog.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,28 +8,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.moviecatalog.DateField
 import com.example.moviecatalog.EditField
 import com.example.moviecatalog.PasswordEditField
 import com.example.moviecatalog.R
-import com.example.moviecatalog.data.Gender
+import com.example.moviecatalog.ui.theme.Black200
+import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun SignUpScreen(navController: NavController){
 
@@ -40,7 +43,38 @@ fun SignUpScreen(navController: NavController){
     var passwordConfirmInput by remember { mutableStateOf("") }
     var nameInput by remember { mutableStateOf("") }
     val birthDateInput = remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf(-1) }
+    val openDialog = remember { mutableStateOf(false) }
 
+
+
+    val errorList = mutableListOf<String>()
+
+    var error:String? = loginErrors(loginInput)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    error = emailErrors(emailInput)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    error = nameErrors(loginInput)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    error = passwordErrors(passwordInput)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    error = birthDateErrors(birthDateInput.value)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    error = genderErrors(gender)
+    if(error!=null) {
+        errorList.add(error)
+    }
+    if(passwordInput!=passwordConfirmInput) errorList.add("Пароли не совпадают")
 
 
 
@@ -139,14 +173,15 @@ fun SignUpScreen(navController: NavController){
 
         Spacer(Modifier.height(4.dp))
 
+
+
         Row(Modifier.fillMaxWidth(1f)){
-            var gender by remember { mutableStateOf(Gender.NONE) }
-            Button(onClick = {gender = Gender.MALE},
+            Button(onClick = {gender = 0},
                 modifier = Modifier
                     .weight(1f)
                     .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (gender == Gender.MALE)  MaterialTheme.colors.primary
+                    backgroundColor = if (gender == 0)  MaterialTheme.colors.primary
                     else MaterialTheme.colors.background
                 ),
                 border =  BorderStroke(1.dp, MaterialTheme.colors.secondary),
@@ -159,12 +194,12 @@ fun SignUpScreen(navController: NavController){
                     style = MaterialTheme.typography.body1
                 )
             }
-            Button(onClick = {gender = Gender.FEMALE},
+            Button(onClick = {gender = 1},
                 modifier = Modifier
                     .weight(1f)
                     .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (gender == Gender.FEMALE)  MaterialTheme.colors.primary
+                    backgroundColor = if (gender == 1)  MaterialTheme.colors.primary
                     else MaterialTheme.colors.background
                 ),
                 border =  BorderStroke(1.dp, MaterialTheme.colors.secondary),
@@ -181,19 +216,29 @@ fun SignUpScreen(navController: NavController){
         Spacer(Modifier.height(20.dp))
 
 
-        Button(onClick = {},modifier = Modifier
+
+        Button(onClick = {
+
+            if(errorList.isNotEmpty())
+            openDialog.value = true
+
+        },modifier = Modifier
             .fillMaxWidth(1f)
             .height(40.dp),
-            colors = ButtonDefaults.buttonColors(
+            colors = if (errorList.isEmpty()) ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.primary
+            ) else
+            ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.background
             ),
-            border =  BorderStroke(1.dp, MaterialTheme.colors.secondary),
+            border =  if(errorList.isEmpty()) null else BorderStroke(1.dp, MaterialTheme.colors.secondary),
             shape = RoundedCornerShape(4.dp)
         )
         {
             Text(
                 stringResource(R.string.register),
-                color = MaterialTheme.colors.primary,
+                color =  if(errorList.isEmpty()) Color.White
+                else MaterialTheme.colors.primary,
                 style = MaterialTheme.typography.body2
             )
 
@@ -219,6 +264,24 @@ fun SignUpScreen(navController: NavController){
             )
         }
 
+        if (openDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    openDialog.value = false
+                },
+                title = { Text(text = "Ошибки", color = Black200) },
+                text = { Column() {
+                    for(i in errorList) Text(i,color = Black200)
+                } },
+                buttons = {
+                    Button(
+                        onClick = { openDialog.value = false }
+                    ) {
+                        Text("OK", style = MaterialTheme.typography.h1)
+                    }
+                }
+            )
+        }
 
 
 
@@ -226,3 +289,57 @@ fun SignUpScreen(navController: NavController){
 
 }
 
+fun loginErrors(value:String):String?{
+
+    if(value == "") return "Пустой логин"
+    return null
+
+}
+
+fun passwordErrors(value:String):String?{
+
+    if(value == "") return "Пустой пароль"
+    return null
+
+}
+
+fun emailErrors(value:String):String?{
+
+    if(value == "") return "Пустой email"
+    if(!android.util.Patterns.EMAIL_ADDRESS.matcher(value).matches())
+        return "Не правильный email"
+    return null
+
+}
+
+fun nameErrors(value:String):String?{
+
+    if(value == "") return "Пустое имя"
+    return null
+
+}
+
+fun birthDateErrors(value:String):String?{
+
+    if(value == "") return "Пустая дата рождения"
+    return null
+
+}
+
+fun genderErrors(value:Int):String?{
+
+    if(value == -1) return "Не выбран пол"
+    return null
+
+}
+
+
+@Composable
+@Preview
+fun Previ()
+{
+    MovieCatalogTheme() {
+        SignUpScreen(navController = rememberNavController());
+    }
+
+}

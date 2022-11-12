@@ -15,8 +15,10 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -27,12 +29,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.moviecatalog.R
 import com.example.moviecatalog.RatingIcon
+import com.example.moviecatalog.data.Author
 import com.example.moviecatalog.data.DataSource
 import com.example.moviecatalog.data.Review
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 import com.example.moviecatalog.ui.theme.White200
 import com.example.moviecatalog.ui.theme.detailColor
+import com.example.moviecatalog.ui.theme.dialogColor
 import java.text.NumberFormat
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -60,6 +65,11 @@ fun MovieScreen(navController: NavController) {
             " душой, находит подход как к заключённым, так и к охранникам, добиваясь их особого к себе " +
             "расположения"
 
+    var isFavorite by remember {mutableStateOf(false)}
+    val dialogIsOpen  = remember {mutableStateOf(false)}
+
+    val myReview:MutableState<Review?> = remember {mutableStateOf(null)}
+
 
     Column(
         modifier = Modifier
@@ -83,11 +93,15 @@ fun MovieScreen(navController: NavController) {
                 imageVector = Icons.Outlined.Favorite,
                 contentDescription = "favorite",
                 Modifier
-                    .clickable(onClick = {})
+                    .clickable(onClick = { isFavorite = !isFavorite })
                     .padding(top = 5.dp),
-                tint = MaterialTheme.colors.primary
+                tint = if(isFavorite) MaterialTheme.colors.primary
+            else MaterialTheme.colors.secondary
             )
         }
+
+
+
 
         Box() {
             Image(
@@ -112,6 +126,8 @@ fun MovieScreen(navController: NavController) {
             )
 
         }
+
+
 
 
 
@@ -162,14 +178,23 @@ fun MovieScreen(navController: NavController) {
                     color = Color.White,
                 )
                 Spacer(Modifier.weight(1f))
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "addReview",
-                    Modifier
-                        .clickable(onClick = {}),
-                    tint = MaterialTheme.colors.primary
-                )
+                if(myReview.value==null) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "addReview",
+                        Modifier
+                            .clickable(onClick = { dialogIsOpen.value = true }),
+                        tint = MaterialTheme.colors.primary,
+
+                        )
+                }
             }
+
+
+
+           if(myReview.value!=null) Review(myReview.value!!,
+               isMy = true,
+               onEdit = {dialogIsOpen.value = true})
 
             ReviewList(reviewList = DataSource().reviewList(), modifier = Modifier.height(500.dp))
 
@@ -178,8 +203,6 @@ fun MovieScreen(navController: NavController) {
 
 
     }
-
-
 
     Icon(
         imageVector = Icons.Default.ArrowBack,
@@ -190,7 +213,143 @@ fun MovieScreen(navController: NavController) {
         tint = Color.White,
     )
 
+    Dialog(myReview, dialogIsOpen)
+
 }
+@Composable
+fun Dialog(myReview:MutableState<Review?>, dialogIsOpen:MutableState<Boolean>){
+    if(!dialogIsOpen.value) return
+
+    var count by remember{ mutableStateOf(myReview.value?.rating?.toInt() ?: 0)}
+    var reviewText by remember { mutableStateOf(myReview.value?.reviewText?: "")}
+    var isAnonymous by remember { mutableStateOf(myReview.value?.isAnonymous?: false)}
+
+    Box(Modifier.fillMaxSize().padding(20.dp)) {
+        Column(
+            modifier = Modifier
+
+                .background(dialogColor)
+                .align(Center)
+                .padding(10.dp)
+
+        ,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+
+
+
+        )
+        {
+            Text(
+                text = "Оставить отзыв",
+                style = MaterialTheme.typography.h1,
+                color = Color.White,
+            )
+                Row(horizontalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier.fillMaxWidth()){
+                     for(i in 1..10) {
+
+                         if (count >= i)
+                             Image(
+
+                                 painter = painterResource(id = R.drawable.orange_star),
+                                 contentDescription = "$i",
+                                 modifier = Modifier
+                                     .size(20.dp)
+                                     .clickable(onClick = {
+                                         count = i
+                                     })
+                             )
+                         else Image(
+                             painter = painterResource(id = R.drawable.star_icon),
+                             contentDescription = "$i",
+                             modifier = Modifier
+                                 .size(20.dp)
+                                 .clickable(onClick = {
+                                     count = i
+                                 })
+                         )
+
+
+                     }
+                }
+
+            OutlinedTextField(reviewText, onValueChange = {reviewText = it},
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxWidth()
+
+
+            )
+
+            Row(verticalAlignment = CenterVertically){
+                Text(
+                    text = "Анонимный отзыв",
+                    style = MaterialTheme.typography.body2,
+                    color = Color.White,
+                )
+                Spacer(Modifier.weight(1f))
+                Checkbox(
+                    checked = isAnonymous,
+                    onCheckedChange = { isAnonymous = it },
+
+                )
+
+            }
+
+            Button(onClick = {
+                myReview.value = Review(
+                         rating = count.toDouble(),
+                         reviewText = reviewText,
+                         isAnonymous = isAnonymous,
+                         createDateTime = LocalDateTime.now().toString(),
+                         author = Author(userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                             nickName = "Test",avatar = R.drawable.profile_image)
+                     )
+                dialogIsOpen.value = false
+                             },
+                modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(40.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.primary
+                    ),
+                shape = RoundedCornerShape(4.dp)
+            )
+            {
+                Text(
+                    text = "Сохранить",
+                    color = Color.White,
+                    style = MaterialTheme.typography.body2
+                )
+
+            }
+
+            Button(onClick = {
+                dialogIsOpen.value = false
+                             },modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(40.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = dialogColor
+                ),
+                border =  null,
+                shape = RoundedCornerShape(4.dp),
+                elevation = ButtonDefaults.elevation(0.dp)
+            )
+            {
+                Text(
+                    text = "Отмена",
+                    color = MaterialTheme.colors.primary,
+                    style = MaterialTheme.typography.body2
+                )
+            }
+
+
+        }
+    }
+}
+
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -235,7 +394,7 @@ fun ReviewList(reviewList: List<Review>, modifier: Modifier) {
 }
 
 @Composable
-fun Review(review: Review, isMy: Boolean = true) {
+fun Review(review: Review, isMy: Boolean = false, onEdit: () -> Unit = {}) {
 
     Card( border = BorderStroke
         (1.dp, MaterialTheme.colors.secondary),
@@ -246,7 +405,7 @@ fun Review(review: Review, isMy: Boolean = true) {
 
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (review.isAnonymous) {
+                if (review.isAnonymous and !isMy) {
 
                     Image(
                         painter = painterResource(id = R.drawable.profile_image),
@@ -283,7 +442,11 @@ fun Review(review: Review, isMy: Boolean = true) {
 
 
                 Spacer(modifier = Modifier.weight(1f))
-                RatingIcon(rating = review.rating)
+                RatingIcon(rating = review.rating,
+                    isReview = true,
+                    modifier = Modifier
+                        .padding(start = 5.dp, end = 5.dp)
+                )
 
             }
 
@@ -306,7 +469,7 @@ fun Review(review: Review, isMy: Boolean = true) {
                         imageVector = Icons.Filled.Edit,
                         contentDescription = "editReview",
                         Modifier
-                            .clickable(onClick = {}),
+                            .clickable(onClick = onEdit),
                         tint = Color.Gray
                     )
                     Spacer(Modifier.width(5.dp))
