@@ -1,7 +1,6 @@
 package com.example.moviecatalog.data
 
-import androidx.annotation.DrawableRes
-
+/*
 data class Movie(
     @DrawableRes val poster:Int,
     val name:String,
@@ -10,4 +9,15 @@ data class Movie(
     val genres:List<String>
     )
 
+*/
+@kotlinx.serialization.Serializable
+data class Movie(
+    val id: String,
+    val poster:String,
+    val name:String,
+    val year:Int,
+    val country:String,
+    val genres:List<Genre>,
+    val reviews:List<Review>
+)
 

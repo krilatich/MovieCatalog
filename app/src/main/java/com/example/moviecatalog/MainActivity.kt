@@ -3,8 +3,10 @@ package com.example.moviecatalog
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
 import android.widget.DatePicker
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
@@ -16,7 +18,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,18 +29,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.moviecatalog.screens.MovieScreen
-import com.example.moviecatalog.ui.theme.MovieCatalogTheme
-import com.example.moviecatalog.ui.theme.Orange200
-import com.example.moviecatalog.ui.theme.White200
-import com.example.moviecatalog.ui.theme.barColor
+import com.example.moviecatalog.ui.theme.*
 import java.util.*
 
 class MainActivity : ComponentActivity() {
@@ -227,7 +227,7 @@ fun NavigationBottomBar(navController: NavController,modifier: Modifier = Modifi
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.clickable(onClick = {navController.navigate("main_screen")})) {
                 Icon(
-                    Icons.Filled.Home,
+                    painterResource(id = R.drawable.main_icon),
                     contentDescription = "HomeIcon",
                     tint = if(navController.currentDestination?.route == Screen.MainScreen.route)
                         MaterialTheme.colors.primary
@@ -269,12 +269,12 @@ fun NavigationBottomBar(navController: NavController,modifier: Modifier = Modifi
 
 
 @Composable
-fun RatingIcon(rating: Double,isReview: Boolean = false,modifier: Modifier = Modifier){
+fun RatingIcon(modifier: Modifier = Modifier,rating: Double,isReview: Boolean = false){
     Surface(
         shape = RoundedCornerShape(10.dp),
         color = if (rating<4) Color.Red
         else if (rating<6) Orange200
-        else if(rating<8) Color.Yellow
+        else if(rating<8) Yellow200
         else Color.Green
     ) {
         Text(
@@ -288,11 +288,8 @@ fun RatingIcon(rating: Double,isReview: Boolean = false,modifier: Modifier = Mod
 
 }
 
-
-@Preview
-@Composable
-fun Pr(){
-    MovieCatalogTheme {
-        MovieScreen(rememberNavController())
-    }
+fun mToast(context: Context, message:String){
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
+
+

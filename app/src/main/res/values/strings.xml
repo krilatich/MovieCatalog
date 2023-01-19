@@ -16,6 +16,7 @@
     <string name="LogIn">Войти</string>
     <string name="SignUp">Регистрация</string>
     <string name="Empty" />
+    <string name="success">success</string>
 
 
 </resources>

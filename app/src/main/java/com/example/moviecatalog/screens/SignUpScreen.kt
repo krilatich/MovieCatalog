@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -27,13 +28,22 @@ import com.example.moviecatalog.DateField
 import com.example.moviecatalog.EditField
 import com.example.moviecatalog.PasswordEditField
 import com.example.moviecatalog.R
+import com.example.moviecatalog.network.Network
+import com.example.moviecatalog.network.RegisterRequestBody
+import com.example.moviecatalog.network.TokenResponse
 import com.example.moviecatalog.ui.theme.Black200
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun SignUpScreen(navController: NavController){
+fun SignUpScreen(navController: NavController) {
+
+
+    val mContext = LocalContext.current
 
     val focusManager = LocalFocusManager.current
 
@@ -47,44 +57,45 @@ fun SignUpScreen(navController: NavController){
     val openDialog = remember { mutableStateOf(false) }
 
 
-
     val errorList = mutableListOf<String>()
 
-    var error:String? = loginErrors(loginInput)
-    if(error!=null) {
+    var error: String? = loginErrors(loginInput)
+    if (error != null) {
         errorList.add(error)
     }
     error = emailErrors(emailInput)
-    if(error!=null) {
+    if (error != null) {
         errorList.add(error)
     }
     error = nameErrors(loginInput)
-    if(error!=null) {
+    if (error != null) {
         errorList.add(error)
     }
     error = passwordErrors(passwordInput)
-    if(error!=null) {
+    if (error != null) {
         errorList.add(error)
     }
     error = birthDateErrors(birthDateInput.value)
-    if(error!=null) {
+    if (error != null) {
         errorList.add(error)
     }
     error = genderErrors(gender)
-    if(error!=null) {
+    if (error != null) {
         errorList.add(error)
     }
-    if(passwordInput!=passwordConfirmInput) errorList.add("Пароли не совпадают")
+    if (passwordInput != passwordConfirmInput) errorList.add("Пароли не совпадают")
 
 
 
 
-    Column(modifier = Modifier
-        .background(MaterialTheme.colors.background)
-        .fillMaxSize(1f)
-        .padding(20.dp),
+    Column(
+        modifier = Modifier
+            .background(MaterialTheme.colors.background)
+            .fillMaxSize(1f)
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(5.dp))
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    )
 
 
     {
@@ -112,7 +123,8 @@ fun SignUpScreen(navController: NavController){
                 .align(Alignment.Start)
         )
 
-        EditField( label = R.string.login,
+        EditField(
+            label = R.string.login,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next
             ),
@@ -123,7 +135,8 @@ fun SignUpScreen(navController: NavController){
             onValueChanged = { loginInput = it },
         )
 
-        EditField( label = R.string.e_mail,
+        EditField(
+            label = R.string.e_mail,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next
             ),
@@ -134,7 +147,8 @@ fun SignUpScreen(navController: NavController){
             onValueChanged = { emailInput = it },
         )
 
-        EditField( label = R.string.name,
+        EditField(
+            label = R.string.name,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next
             ),
@@ -145,7 +159,8 @@ fun SignUpScreen(navController: NavController){
             onValueChanged = { nameInput = it },
         )
 
-        PasswordEditField( label = R.string.password,
+        PasswordEditField(
+            label = R.string.password,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Password
@@ -157,7 +172,8 @@ fun SignUpScreen(navController: NavController){
             onValueChanged = { passwordInput = it },
         )
 
-        PasswordEditField( label = R.string.password_confirm,
+        PasswordEditField(
+            label = R.string.password_confirm,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done,
                 keyboardType = KeyboardType.Password
@@ -169,22 +185,23 @@ fun SignUpScreen(navController: NavController){
             onValueChanged = { passwordConfirmInput = it },
         )
 
-        DateField(birthDateInput,R.string.birth_date)
+        DateField(birthDateInput, R.string.birth_date)
 
         Spacer(Modifier.height(4.dp))
 
 
 
-        Row(Modifier.fillMaxWidth(1f)){
-            Button(onClick = {gender = 0},
+        Row(Modifier.fillMaxWidth(1f)) {
+            Button(
+                onClick = { gender = 0 },
                 modifier = Modifier
                     .weight(1f)
                     .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (gender == 0)  MaterialTheme.colors.primary
+                    backgroundColor = if (gender == 0) MaterialTheme.colors.primary
                     else MaterialTheme.colors.background
                 ),
-                border =  BorderStroke(1.dp, MaterialTheme.colors.secondary),
+                border = BorderStroke(1.dp, MaterialTheme.colors.secondary),
                 shape = RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
             )
             {
@@ -194,15 +211,16 @@ fun SignUpScreen(navController: NavController){
                     style = MaterialTheme.typography.body1
                 )
             }
-            Button(onClick = {gender = 1},
+            Button(
+                onClick = { gender = 1 },
                 modifier = Modifier
                     .weight(1f)
                     .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (gender == 1)  MaterialTheme.colors.primary
+                    backgroundColor = if (gender == 1) MaterialTheme.colors.primary
                     else MaterialTheme.colors.background
                 ),
-                border =  BorderStroke(1.dp, MaterialTheme.colors.secondary),
+                border = BorderStroke(1.dp, MaterialTheme.colors.secondary),
                 shape = RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp)
             )
             {
@@ -217,38 +235,98 @@ fun SignUpScreen(navController: NavController){
 
 
 
-        Button(onClick = {
+        Button(
+            onClick = {
 
-            if(errorList.isNotEmpty())
-            openDialog.value = true
+                if (errorList.isNotEmpty())
+                    openDialog.value = true
+                else {
+                    val authApi = Network.getAuthApi()
 
-        },modifier = Modifier
-            .fillMaxWidth(1f)
-            .height(40.dp),
+                    Network.userNickname = loginInput
+
+                    val callTargetResponse = authApi.register(RegisterRequestBody(
+                        userName = loginInput,
+                        name = nameInput,
+                        birthDate = "2022-12-26T08:06:55.508Z",
+                        email = emailInput,
+                        gender = gender,
+                        password = passwordInput
+                    ))
+
+
+
+                    callTargetResponse.enqueue(object : Callback<TokenResponse> {
+                        override fun onResponse(
+                            call: Call<TokenResponse>,
+                            response: Response<TokenResponse>
+                        ) {
+                            if(response.isSuccessful) {
+                                Network.token = response.body()!!.token
+                                Network.userNickname = loginInput
+                                navController.navigate("main_screen")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
+
+                        }
+
+                    }
+                    )
+
+
+/*
+                    val result = AuthRepository().register(
+                        RegisterRequestBody(
+                            userName = loginInput,
+                            name = nameInput,
+                            birthDate = "2022-12-26T08:06:55.508Z",
+                            email = emailInput,
+                            gender = gender,
+                            password = passwordInput
+                        )
+                    )
+                    nameInput = Network.token.toString()
+                    mToast(mContext, result)
+
+
+ */
+                    //navController.navigate("main_screen")
+
+                }
+
+            }, modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(40.dp),
             colors = if (errorList.isEmpty()) ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary
             ) else
-            ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.background
+                ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.background
+                ),
+            border = if (errorList.isEmpty()) null else BorderStroke(
+                1.dp,
+                MaterialTheme.colors.secondary
             ),
-            border =  if(errorList.isEmpty()) null else BorderStroke(1.dp, MaterialTheme.colors.secondary),
             shape = RoundedCornerShape(4.dp)
         )
         {
             Text(
                 stringResource(R.string.register),
-                color =  if(errorList.isEmpty()) Color.White
+                color = if (errorList.isEmpty()) Color.White
                 else MaterialTheme.colors.primary,
                 style = MaterialTheme.typography.body2
             )
 
         }
 
-        Button(onClick = {
-                         navController.navigate("signIn_screen")
-        },modifier = Modifier
-            .fillMaxWidth(1f)
-            .height(40.dp),
+        Button(
+            onClick = {
+                navController.navigate("signIn_screen")
+            }, modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(40.dp),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.background
 
@@ -270,9 +348,11 @@ fun SignUpScreen(navController: NavController){
                     openDialog.value = false
                 },
                 title = { Text(text = "Ошибки", color = Black200) },
-                text = { Column() {
-                    for(i in errorList) Text(i,color = Black200)
-                } },
+                text = {
+                    Column() {
+                        for (i in errorList) Text(i, color = Black200)
+                    }
+                },
                 buttons = {
                     Button(
                         onClick = { openDialog.value = false }
@@ -284,51 +364,50 @@ fun SignUpScreen(navController: NavController){
         }
 
 
-
     }
 
 }
 
-fun loginErrors(value:String):String?{
+fun loginErrors(value: String): String? {
 
-    if(value == "") return "Пустой логин"
+    if (value == "") return "Пустой логин"
     return null
 
 }
 
-fun passwordErrors(value:String):String?{
+fun passwordErrors(value: String): String? {
 
-    if(value == "") return "Пустой пароль"
+    if (value == "") return "Пустой пароль"
     return null
 
 }
 
-fun emailErrors(value:String):String?{
+fun emailErrors(value: String): String? {
 
-    if(value == "") return "Пустой email"
-    if(!android.util.Patterns.EMAIL_ADDRESS.matcher(value).matches())
+    if (value == "") return "Пустой email"
+    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(value).matches())
         return "Не правильный email"
     return null
 
 }
 
-fun nameErrors(value:String):String?{
+fun nameErrors(value: String): String? {
 
-    if(value == "") return "Пустое имя"
+    if (value == "") return "Пустое имя"
     return null
 
 }
 
-fun birthDateErrors(value:String):String?{
+fun birthDateErrors(value: String): String? {
 
-    if(value == "") return "Пустая дата рождения"
+    if (value == "") return "Пустая дата рождения"
     return null
 
 }
 
-fun genderErrors(value:Int):String?{
+fun genderErrors(value: Int): String? {
 
-    if(value == -1) return "Не выбран пол"
+    if (value == -1) return "Не выбран пол"
     return null
 
 }
@@ -336,8 +415,7 @@ fun genderErrors(value:Int):String?{
 
 @Composable
 @Preview
-fun Previ()
-{
+fun Previ() {
     MovieCatalogTheme() {
         SignUpScreen(navController = rememberNavController());
     }

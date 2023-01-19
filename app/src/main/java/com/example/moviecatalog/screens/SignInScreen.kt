@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,13 +30,22 @@ import androidx.navigation.compose.rememberNavController
 import com.example.moviecatalog.EditField
 import com.example.moviecatalog.PasswordEditField
 import com.example.moviecatalog.R
+import com.example.moviecatalog.mToast
+import com.example.moviecatalog.network.LoginRequestBody
+import com.example.moviecatalog.network.Network
+import com.example.moviecatalog.network.TokenResponse
 import com.example.moviecatalog.ui.theme.Black200
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
-fun SignInScreen(navController: NavController){
+fun SignInScreen(navController: NavController) {
 
     val focusManager = LocalFocusManager.current
+
+    val mContext = LocalContext.current
 
     var loginInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
@@ -43,15 +53,14 @@ fun SignInScreen(navController: NavController){
     val openDialog = remember { mutableStateOf(false) }
 
 
-
     val errorList = mutableListOf<String>()
 
-    var error:String? = loginErrors(loginInput)
-    if(error!=null) {
+    var error: String? = loginErrors(loginInput)
+    if (error != null) {
         errorList.add(error)
     }
     error = passwordErrors(passwordInput)
-    if(error!=null) {
+    if (error != null) {
         errorList.add(error)
     }
 
@@ -60,12 +69,14 @@ fun SignInScreen(navController: NavController){
 
 
 
-    Column(modifier = Modifier
-        .background(MaterialTheme.colors.background)
-        .fillMaxSize(1f)
-        .padding(20.dp),
+    Column(
+        modifier = Modifier
+            .background(MaterialTheme.colors.background)
+            .fillMaxSize(1f)
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(5.dp))
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    )
 
 
     {
@@ -82,15 +93,17 @@ fun SignInScreen(navController: NavController){
 
         Text(
             text = stringResource(com.example.moviecatalog.R.string.MovieCatalog),
-            style = TextStyle(fontSize = 35.sp, fontFamily =
-            FontFamily(Font(com.example.moviecatalog.R.font.ibmplex_bold))
+            style = TextStyle(
+                fontSize = 35.sp, fontFamily =
+                FontFamily(Font(com.example.moviecatalog.R.font.ibmplex_bold))
             ),
             color = MaterialTheme.colors.primary
         )
 
         Spacer(Modifier.height(50.dp))
 
-        EditField( label = R.string.login,
+        EditField(
+            label = R.string.login,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Next
             ),
@@ -102,7 +115,8 @@ fun SignInScreen(navController: NavController){
         )
 
 
-        PasswordEditField( label = R.string.password,
+        PasswordEditField(
+            label = R.string.password,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done,
                 keyboardType = KeyboardType.Password
@@ -117,42 +131,78 @@ fun SignInScreen(navController: NavController){
         Spacer(Modifier.height(200.dp))
 
 
-        Button(onClick = {
-            if(errorList.isNotEmpty())
-                openDialog.value = true
-            else
-                navController.navigate("main_screen")
-        },modifier = Modifier
-            .fillMaxWidth(1f)
-            .height(40.dp),
+        Button(
+            onClick = {
+                if (errorList.isNotEmpty())
+                    openDialog.value = true
+                else {
+                    val authApi = Network.getAuthApi()
+
+                    Network.userNickname = loginInput
+
+                    val callTargetResponse = authApi.login(
+                        LoginRequestBody(
+                            username = loginInput,
+                            password = passwordInput
+                        )
+                    )
+
+                    callTargetResponse.enqueue(object : Callback<TokenResponse> {
+                        override fun onResponse(
+                            call: Call<TokenResponse>,
+                            response: Response<TokenResponse>
+                        ) {
+                            if(response.isSuccessful) {
+                                Network.token = response.body()!!.token
+                                Network.userNickname = loginInput
+                                navController.navigate("main_screen")
+                            }
+                            else if(response.code() == 400) mToast(mContext,"Неправильный логин или пароль")
+                        }
+
+                        override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
+                            t.localizedMessage?.let { mToast(mContext, it) }
+                        }
+
+                    }
+                    )
+                }
+
+            }, modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(40.dp),
             colors = if (errorList.isEmpty()) ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary
             ) else
                 ButtonDefaults.buttonColors(
                     backgroundColor = MaterialTheme.colors.background
                 ),
-            border =  if(errorList.isEmpty()) null else BorderStroke(1.dp, MaterialTheme.colors.secondary),
+            border = if (errorList.isEmpty()) null else BorderStroke(
+                1.dp,
+                MaterialTheme.colors.secondary
+            ),
             shape = RoundedCornerShape(4.dp)
         )
         {
             Text(
                 text = stringResource(R.string.LogIn),
-                color = if(errorList.isEmpty()) Color.White
+                color = if (errorList.isEmpty()) Color.White
                 else MaterialTheme.colors.primary,
                 style = MaterialTheme.typography.body2
             )
 
         }
 
-        Button(onClick = {
-                         navController.navigate("signUp_screen")
-        },modifier = Modifier
-            .fillMaxWidth(1f)
-            .height(40.dp),
+        Button(
+            onClick = {
+                navController.navigate("signUp_screen")
+            }, modifier = Modifier
+                .fillMaxWidth(1f)
+                .height(40.dp),
             colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.background
-                ),
-            border =  null,
+                backgroundColor = MaterialTheme.colors.background
+            ),
+            border = null,
             shape = RoundedCornerShape(4.dp),
             elevation = ButtonDefaults.elevation(0.dp)
         )
@@ -165,8 +215,6 @@ fun SignInScreen(navController: NavController){
         }
 
 
-
-
     }
 
     if (openDialog.value) {
@@ -175,9 +223,11 @@ fun SignInScreen(navController: NavController){
                 openDialog.value = false
             },
             title = { Text(text = "Ошибки", color = Black200) },
-            text = { Column() {
-                for(i in errorList) Text(i,color = Black200)
-            } },
+            text = {
+                Column() {
+                    for (i in errorList) Text(i, color = Black200)
+                }
+            },
             buttons = {
                 Button(
                     onClick = { openDialog.value = false }
@@ -193,7 +243,7 @@ fun SignInScreen(navController: NavController){
 
 @Composable
 @Preview
-fun Preview1(){
+fun Preview1() {
     MovieCatalogTheme() {
         SignInScreen(navController = rememberNavController())
     }

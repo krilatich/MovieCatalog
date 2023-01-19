@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -21,18 +22,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.moviecatalog.DateField
-import com.example.moviecatalog.EditField
-import com.example.moviecatalog.NavigationBottomBar
+import com.example.moviecatalog.*
 import com.example.moviecatalog.R
+import com.example.moviecatalog.data.ProfileResponseModel
+import com.example.moviecatalog.network.Network
 import com.example.moviecatalog.ui.theme.Black200
 import com.example.moviecatalog.ui.theme.MovieCatalogTheme
 import com.example.moviecatalog.ui.theme.White200
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
-fun ProfileScreen(navController: NavController){
+fun ProfileScreen(navController: NavController) {
 
-    Scaffold(bottomBar = { NavigationBottomBar(navController = navController)}) {
+    var isUpdated by remember { mutableStateOf(false) }
+    var isChanged by remember { mutableStateOf(false) }
+
+    Scaffold(bottomBar = { NavigationBottomBar(navController = navController) }) {
         val focusManager = LocalFocusManager.current
 
         var avatarRefInput by remember { mutableStateOf("") }
@@ -43,54 +50,106 @@ fun ProfileScreen(navController: NavController){
         val openDialog = remember { mutableStateOf(false) }
         val errorList = mutableListOf<String>()
 
+        val errorCode = remember { mutableStateOf<String?>(null) }
+
+
+
+        if (errorCode.value != null) mToast(LocalContext.current, errorCode.value!!)
 
         var error = emailErrors(emailInput)
-        if(error!=null) {
+        if (error != null) {
             errorList.add(error)
         }
 
         error = nameErrors(nameInput)
-        if(error!=null) {
+        if (error != null) {
             errorList.add(error)
         }
 
         error = birthDateErrors(birthDateInput.value)
-        if(error!=null) {
+        if (error != null) {
             errorList.add(error)
         }
 
         error = genderErrors(gender)
-        if(error!=null) {
+        if (error != null) {
             errorList.add(error)
+        }
+
+        var oldProfile by remember { mutableStateOf<ProfileResponseModel?>(null) }
+
+        if (!isUpdated) {
+
+            val api = Network.getUserApi()
+            val callTargetResponse: Call<ProfileResponseModel> =
+                api.getProfile("Bearer ${Network.token}")
+
+
+            callTargetResponse.enqueue(object : Callback<ProfileResponseModel> {
+
+                override fun onResponse(
+                    call: Call<ProfileResponseModel>, response: Response<ProfileResponseModel>
+                ) {
+                    if (response.isSuccessful) {
+                        Network.userId = response.body()!!.id
+                        oldProfile = response.body()!!
+                        emailInput = response.body()!!.email
+                        if (response.body()!!.avatarLink != null)
+                            avatarRefInput = response.body()!!.avatarLink.toString()
+                        birthDateInput.value = response.body()!!.birthDate
+                        gender = response.body()!!.gender
+                        nameInput = response.body()!!.name
+
+                    } else navController.navigate("signIn_screen")
+
+                }
+
+                override fun onFailure(call: Call<ProfileResponseModel>, t: Throwable) {
+                    navController.navigate("signIn_screen")
+                }
+
+            })
+
+
+            isUpdated = true
+
+        }
+        oldProfile?.let {
+            if (
+                it.email != emailInput
+                || it.avatarLink != avatarRefInput
+                || it.name != nameInput
+                || it.gender != gender
+            )
+                isChanged = true
         }
 
 
 
-
-
-
-        Column(modifier = Modifier
-            .background(MaterialTheme.colors.background)
-            .fillMaxSize(1f)
-            .padding(20.dp),
+        Column(
+            modifier = Modifier
+                .background(MaterialTheme.colors.background)
+                .fillMaxSize(1f)
+                .padding(20.dp),
             horizontalAlignment = Alignment.Start
 
         )
         {
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
 
                 Image(
                     modifier = Modifier
-                        .size(75.dp)
-                    ,
+                        .size(75.dp),
                     //contentScale = ContentScale.Crop,
                     painter = painterResource(id = R.drawable.profile_image),
                     contentDescription = "profile_image"
                 )
                 Spacer(Modifier.width(20.dp))
                 Text(
-                    text = "Тест",
+                    text = nameInput,
                     style = MaterialTheme.typography.h1,
                     color = White200
                 )
@@ -203,26 +262,64 @@ fun ProfileScreen(navController: NavController){
             Spacer(Modifier.height(40.dp))
             Button(
                 onClick = {
-                    if(errorList.isNotEmpty())
+                    if (errorList.isNotEmpty())
                         openDialog.value = true
+                    else if (isChanged) {
+
+                        val api = Network.getUserApi()
+                        val callTargetResponse: Call<Unit> =
+                            api.putProfile(
+                                "Bearer ${Network.token}", ProfileResponseModel(
+                                    email = emailInput,
+                                    id = Network.userId!!,
+                                    nickName = Network.userNickname!!,
+                                    birthDate = birthDateInput.value,
+                                    name = nameInput,
+                                    avatarLink = avatarRefInput,
+                                    gender = gender
+                                )
+                            )
+
+
+                        callTargetResponse.enqueue(object : Callback<Unit> {
+
+                            override fun onResponse(
+                                call: Call<Unit>,
+                                response: Response<Unit>
+                            ) {
+                                if (response.isSuccessful) {
+
+                                    isChanged = false
+
+                                } else errorCode.value = response.message()
+
+                            }
+
+                            override fun onFailure(call: Call<Unit>, t: Throwable) {
+                                errorCode.value = t.localizedMessage
+                            }
+
+                        })
+
+                    }
 
                 }, modifier = Modifier
                     .fillMaxWidth(1f)
                     .height(40.dp),
-                colors = if (errorList.isEmpty()) ButtonDefaults.buttonColors(
+                colors = if (errorList.isEmpty() && isChanged) ButtonDefaults.buttonColors(
                     backgroundColor = MaterialTheme.colors.primary
                 ) else
                     ButtonDefaults.buttonColors(
                         backgroundColor = MaterialTheme.colors.background
                     ),
-                border =  if(errorList.isEmpty()) null
+                border = if (errorList.isEmpty() && isChanged) null
                 else BorderStroke(1.dp, MaterialTheme.colors.secondary),
                 shape = RoundedCornerShape(4.dp)
             )
             {
                 Text(
                     "Сохранить",
-                    color = if(errorList.isEmpty()) Color.White
+                    color = if (errorList.isEmpty() && isChanged) Color.White
                     else MaterialTheme.colors.primary,
                     style = MaterialTheme.typography.body2
                 )
@@ -231,7 +328,21 @@ fun ProfileScreen(navController: NavController){
 
             Button(
                 onClick = {
-                    navController.navigate("signIn_screen")
+                    val callTargetResponse = Network.getAuthApi().logout("Bearer ${Network.token}")
+
+                    callTargetResponse.enqueue(object : Callback<Unit> {
+                        override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                            if(response.isSuccessful){
+                                navController.navigate("signIn_screen")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Unit>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+
+                    })
+
                 }, modifier = Modifier
                     .fillMaxWidth(1f)
                     .height(40.dp),
@@ -256,9 +367,11 @@ fun ProfileScreen(navController: NavController){
                     openDialog.value = false
                 },
                 title = { Text(text = "Ошибки", color = Black200) },
-                text = { Column() {
-                    for(i in errorList) Text(i,color = Black200)
-                } },
+                text = {
+                    Column {
+                        for (i in errorList) Text(i, color = Black200)
+                    }
+                },
                 buttons = {
                     Button(
                         onClick = { openDialog.value = false }
@@ -270,30 +383,15 @@ fun ProfileScreen(navController: NavController){
         }
 
 
-
-
     }
 
 
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
+}
 
 
 @Composable
 @Preview
-fun Prev(){
+fun Prev() {
 
     MovieCatalogTheme() {
         ProfileScreen(navController = rememberNavController())

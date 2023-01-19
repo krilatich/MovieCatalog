@@ -1,6 +1,7 @@
 package com.example.moviecatalog.screens
 
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
@@ -21,102 +22,164 @@ import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.moviecatalog.R
 import com.example.moviecatalog.RatingIcon
-import com.example.moviecatalog.data.Author
-import com.example.moviecatalog.data.DataSource
-import com.example.moviecatalog.data.Review
-import com.example.moviecatalog.ui.theme.MovieCatalogTheme
+import com.example.moviecatalog.data.*
+import com.example.moviecatalog.network.Network
 import com.example.moviecatalog.ui.theme.White200
 import com.example.moviecatalog.ui.theme.detailColor
 import com.example.moviecatalog.ui.theme.dialogColor
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.NumberFormat
-import java.time.LocalDateTime
 import java.util.*
+import kotlin.math.min
 
 
 @Composable
-fun MovieScreen(navController: NavController) {
+fun MovieScreen(navController: NavController, movieId:String) {
+
+    var isFavorite by remember {
+        mutableStateOf(false)
+    }
+    val api = Network.getFavoriteApi()
+    val callTargetResponse: Call<FavoritesResponseModel> =
+        api.getFavorites("Bearer ${Network.token}")
+
+    callTargetResponse.enqueue(object : Callback<FavoritesResponseModel> {
+
+        override fun onResponse(
+            call: Call<FavoritesResponseModel>,
+            response: Response<FavoritesResponseModel>
+        ) {
+            if(response.isSuccessful){
+            for(i in response.body()!!.movies)
+                if(i.id == movieId) isFavorite = true}
+            else navController.navigate("signIn_screen")
+
+        }
+
+        override fun onFailure(call: Call<FavoritesResponseModel>, t: Throwable) {
+            navController.navigate("signIn_screen")
+        }
+
+    })
 
 
+
+
+
+
+    val isUpdated = remember { mutableStateOf(false) }
+
+
+
+
+    var movie by remember  {mutableStateOf<MovieDetailsResponseModel?>(
+        MovieDetailsResponseModel(
+            id = "b6c5228b-91fb-43a1-a2ac-08d9b9f3d2a2",
+            ageLimit = 18,
+            poster = "string",
+            description = "string",
+            fees = 2000,
+            genres = listOf(Genre("string","string")),
+            reviews = listOf(
+                ReviewDetails(id="String",
+            reviewText = "String",
+                    rating = 34,
+            isAnonymous = false,
+            createDateTime = "sssasa1",
+            author = Author(userId = "string", nickName = "string", avatar = "string"))
+            ),
+            budget = 188,
+            time = 10,
+            name = "string",
+            tagline = "sting",
+            year = 19,
+            director = "string",
+            country = "string"
+            )
+
+    )}
+
+
+    if(!isUpdated.value) {
+
+        val api = Network.getMovieApi()
+        val callTargetResponse: Call<MovieDetailsResponseModel> =
+            api.getMovie(movieId)
+
+
+        callTargetResponse.enqueue(object : Callback<MovieDetailsResponseModel> {
+
+            override fun onResponse(
+                call: Call<MovieDetailsResponseModel>, response: Response<MovieDetailsResponseModel>
+            ) {
+                if (response.isSuccessful)
+                    movie = response.body()!!
+
+                Log.d("responseDETAIL", response.body()!!.toString())
+
+
+            }
+
+            override fun onFailure(call: Call<MovieDetailsResponseModel>, t: Throwable) {
+                throw t
+            }
+
+        })
+
+        isUpdated.value = true
+
+    }
     val format = NumberFormat.getCurrencyInstance()
     format.currency = Currency.getInstance("USD")
 
-    val time: Int = 0
-    val tagLine: String = "«Страх - это кандалы. Надежда - это свобода»"
-    val director: String = "Фрэнк Дарабонт"
-    val budget: Int = 25000000
-    val fees: Int = 28418687
-    val ageLimit: Int = 16
-    val name: String = "Побег из Шоушенка"
-    val year: Int = 2000
-    val country: String = "США"
-    val genres = listOf("фантастика", "боевик", "мелодрама", "драма", "мюзикл")
-    val description = "Бухгалтер Энди Дюфрейн обвинён в убийстве собственной жены " +
-            "и её любовника. Оказавшись в тюрьме под названием Шоушенк, он сталкивается " +
-            "с жестокостью и беззаконием, царящими по обе стороны решётки. Каждый, кто попадает " +
-            "в эти стены, становится их рабом до конца жизни. Но Энди, обладающий живым умом и доброй" +
-            " душой, находит подход как к заключённым, так и к охранникам, добиваясь их особого к себе " +
-            "расположения"
 
-    var isFavorite by remember {mutableStateOf(false)}
+
     val dialogIsOpen  = remember {mutableStateOf(false)}
 
-    val myReview:MutableState<Review?> = remember {mutableStateOf(null)}
+    var myReview:ReviewDetails? = null
+
+
+    val scrollState = rememberScrollState()
 
 
     Column(
         modifier = Modifier
             .background(MaterialTheme.colors.background)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState),
 
         ) {
 
 
-        Row(
-            Modifier.padding(20.dp)
-        ) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.h1,
-                color = Color.White,
-                modifier = Modifier.padding(start = 50.dp)
-            )
-            Spacer(Modifier.width(25.dp))
-            Icon(
-                imageVector = Icons.Outlined.Favorite,
-                contentDescription = "favorite",
-                Modifier
-                    .clickable(onClick = { isFavorite = !isFavorite })
-                    .padding(top = 5.dp),
-                tint = if(isFavorite) MaterialTheme.colors.primary
-            else MaterialTheme.colors.secondary
-            )
-        }
-
-
-
-
-        Box() {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .graphicsLayer {
+                    alpha = 1f - (scrollState.value.toFloat() / scrollState.maxValue)
+                    translationY = 0.5f * scrollState.value
+                }) {
             Image(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
+                    .fillMaxSize()
 
-                //.align(alignment = Alignment.TopCenter)
+
                 ,
                 contentScale = ContentScale.Crop,
-                painter = painterResource(id = R.drawable.top_picture),
+                painter = rememberAsyncImagePainter(model = movie!!.poster),
                 contentDescription = "topPictureLabel"
             )
             Text(
-                text = name,
+                text = movie!!.name,
                 style = MaterialTheme.typography.caption,
                 color = Color.White,
                 modifier = Modifier
@@ -142,7 +205,7 @@ fun MovieScreen(navController: NavController) {
         ) {
 
             Text(
-                text = description,
+                text = movie!!.description,
                 style = MaterialTheme.typography.body1,
                 color = Color.White,
             )
@@ -153,14 +216,18 @@ fun MovieScreen(navController: NavController) {
             )
 
             Column() {
-                DetailRow(name = "Год", value = year.toString())
-                DetailRow(name = "Страна", value = country)
-                DetailRow(name = "Время", value = time.toString())
-                DetailRow(name = "Слоган", value = tagLine)
-                DetailRow(name = "Режиссер", value = director)
-                DetailRow(name = "Бюджет", value = format.format(budget))
-                DetailRow(name = "Сборы в мире", value = format.format(fees))
-                DetailRow(name = "Возраст", value = "$ageLimit+")
+                DetailRow(name = "Год", value = movie!!.year.toString())
+                DetailRow(name = "Страна", value = movie!!.country)
+                DetailRow(name = "Время", value = movie!!.time.toString())
+                DetailRow(name = "Слоган", value = movie!!.tagline)
+                DetailRow(name = "Режиссер", value = movie!!.director)
+                DetailRow(name = "Бюджет",
+                    value = format.format(movie!!.budget)
+                    )
+                DetailRow(name = "Сборы в мире",
+                    value = format.format(movie!!.fees)
+                  )
+                DetailRow(name = "Возраст", value = "${movie!!.ageLimit}+")
             }
 
             Text(
@@ -169,7 +236,7 @@ fun MovieScreen(navController: NavController) {
                 color = Color.White,
             )
 
-            GenreList(genreList = genres, modifier = Modifier.height(60.dp))
+            GenreList(genreList = movie!!.genres, modifier = Modifier.height(60.dp))
 
             Row() {
                 Text(
@@ -178,7 +245,7 @@ fun MovieScreen(navController: NavController) {
                     color = Color.White,
                 )
                 Spacer(Modifier.weight(1f))
-                if(myReview.value==null) {
+                if(myReview==null) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "addReview",
@@ -190,13 +257,55 @@ fun MovieScreen(navController: NavController) {
                 }
             }
 
+            val reviewList:MutableList<ReviewDetails> = movie!!.reviews.toMutableList()
 
 
-           if(myReview.value!=null) Review(myReview.value!!,
-               isMy = true,
-               onEdit = {dialogIsOpen.value = true})
+                for (r in reviewList) {
 
-            ReviewList(reviewList = DataSource().reviewList(), modifier = Modifier.height(500.dp))
+                    if (r.author.nickName == Network.userNickname!!.filter { !it.isWhitespace() }) {
+                        myReview = r
+                        reviewList.remove(r)
+                    }
+                }
+
+
+           if(myReview!=null) {
+               Review(myReview!!,
+                   isMy = true,
+                   onEdit = { dialogIsOpen.value = true },
+                   onDelete = {
+                       val api = Network.getReviewApi()
+                       val callTargetResponse: Call<Unit> =
+                           api.delete(
+                               token = "Bearer ${Network.token}",
+                               movieId = movieId,
+                               id = myReview!!.id
+                           )
+
+                       callTargetResponse.enqueue(object : Callback<Unit> {
+
+                           override fun onResponse(
+                               call: Call<Unit>, response: Response<Unit>
+                           ) {
+                               if(response.isSuccessful){
+                               isUpdated.value = false
+                               dialogIsOpen.value = false}
+                               else
+                                   navController.navigate("signIn_screen")
+                           }
+
+                           override fun onFailure(call: Call<Unit>, t: Throwable) {
+                               navController.navigate("signIn_screen")
+                           }
+
+                       })
+
+
+
+                   })
+           }
+
+            ReviewList(reviewList = reviewList, modifier = Modifier.height(500.dp))
 
 
         }
@@ -204,27 +313,132 @@ fun MovieScreen(navController: NavController) {
 
     }
 
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(35.dp)
+                    .graphicsLayer {
+                        alpha = min(1f, (scrollState.value.toFloat() / scrollState.maxValue) * 2)
+                    }) {
+
+                Row(
+                    Modifier
+                        .background(MaterialTheme.colors.background)
+                        .fillMaxWidth()) {
+                    movie?.let {
+                        Text(
+                            text = it.name,
+                            style = MaterialTheme.typography.h1,
+                            color = Color.White,
+                            modifier = Modifier.padding(start = 60.dp).width(230.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(25.dp))
+                    Icon(
+                        imageVector = Icons.Outlined.Favorite,
+                        contentDescription = "favorite",
+                        Modifier
+                            .clickable(onClick = {
+                                if (isFavorite) {
+                                    val api = Network.getFavoriteApi()
+                                    val callTargetResponse: Call<Unit> =
+                                        api.deleteFavorites(
+                                            token = "Bearer ${Network.token}",
+                                            id = movieId,
+                                        )
+
+
+                                    callTargetResponse.enqueue(object : Callback<Unit> {
+
+                                        override fun onResponse(
+                                            call: Call<Unit>, response: Response<Unit>
+                                        ) {
+                                            if(response.isSuccessful)
+                                            isFavorite = !isFavorite
+
+                                            else navController.navigate("signIn_screen")
+
+                                        }
+
+                                        override fun onFailure(call: Call<Unit>, t: Throwable) {
+                                            navController.navigate("signIn_screen")
+                                        }
+
+                                    })
+                                } else {
+
+                                    val api = Network.getFavoriteApi()
+                                    val callTargetResponse: Call<Unit> =
+                                        api.addFavorites(
+                                            token = "Bearer ${Network.token}",
+                                            id = movieId,
+                                        )
+
+
+                                    callTargetResponse.enqueue(object : Callback<Unit> {
+
+                                        override fun onResponse(
+                                            call: Call<Unit>, response: Response<Unit>
+                                        ) {
+                                            if(response.isSuccessful)
+                                            isFavorite = !isFavorite
+
+                                            else navController.navigate("signIn_screen")
+                                        }
+
+                                        override fun onFailure(call: Call<Unit>, t: Throwable) {
+                                            navController.navigate("signIn_screen")
+                                        }
+
+                                    })
+
+
+                                }
+                            })
+                            .padding(top = 5.dp)
+                            .background(MaterialTheme.colors.background),
+                        tint = if (isFavorite) MaterialTheme.colors.primary
+                        else MaterialTheme.colors.secondary
+                    )
+                }
+            }
+
     Icon(
         imageVector = Icons.Default.ArrowBack,
-        contentDescription = "favorite",
-        Modifier
+        contentDescription = "goBack",
+        modifier = Modifier
             .clickable(onClick = { navController.navigate("main_screen") })
-            .padding(25.dp),
+            .padding(top = 5.dp, start = 20.dp)
+
+            ,
         tint = Color.White,
     )
 
-    Dialog(myReview, dialogIsOpen)
+
+
+
+
+     Dialog(movieId = movieId,dialogIsOpen= dialogIsOpen, myReview = myReview, isUpdated = isUpdated, navController = navController)
+
+
 
 }
 @Composable
-fun Dialog(myReview:MutableState<Review?>, dialogIsOpen:MutableState<Boolean>){
+fun Dialog(movieId:String ,myReview:ReviewDetails?, isUpdated:MutableState<Boolean>, dialogIsOpen:MutableState<Boolean>,
+           navController: NavController){
     if(!dialogIsOpen.value) return
 
-    var count by remember{ mutableStateOf(myReview.value?.rating?.toInt() ?: 0)}
-    var reviewText by remember { mutableStateOf(myReview.value?.reviewText?: "")}
-    var isAnonymous by remember { mutableStateOf(myReview.value?.isAnonymous?: false)}
+    var isEdit = false
+    if(myReview!=null) isEdit = true
 
-    Box(Modifier.fillMaxSize().padding(20.dp)) {
+    var count by remember{ mutableStateOf(myReview?.rating?: 0)}
+    var reviewText by remember { mutableStateOf(myReview?.reviewText?: "")}
+    var isAnonymous by remember { mutableStateOf(myReview?.isAnonymous?: false)}
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(20.dp)) {
         Column(
             modifier = Modifier
 
@@ -297,19 +511,83 @@ fun Dialog(myReview:MutableState<Review?>, dialogIsOpen:MutableState<Boolean>){
             }
 
             Button(onClick = {
-                myReview.value = Review(
-                         rating = count.toDouble(),
-                         reviewText = reviewText,
-                         isAnonymous = isAnonymous,
-                         createDateTime = LocalDateTime.now().toString(),
-                         author = Author(userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                             nickName = "Test",avatar = R.drawable.profile_image)
-                     )
-                dialogIsOpen.value = false
+
+                if(!isEdit) {
+
+                    val api = Network.getReviewApi()
+                    val callTargetResponse: Call<Unit> =
+                        api.add(
+                            token = "Bearer ${Network.token}",
+                            movieId = movieId,
+                            body = ReviewRequestBody(
+                                reviewText = reviewText,
+                                rating = count,
+                                isAnonymous = isAnonymous
+                            )
+                        )
+
+
+                    callTargetResponse.enqueue(object : Callback<Unit> {
+
+                        override fun onResponse(
+                            call: Call<Unit>, response: Response<Unit>
+                        ) {
+                            if(response.isSuccessful){
+                            isUpdated.value = false
+                            dialogIsOpen.value = false}
+                            else navController.navigate("signIn_screen")
+
+                        }
+
+                        override fun onFailure(call: Call<Unit>, t: Throwable) {
+                            navController.navigate("signIn_screen")
+                        }
+
+                    })
+                }
+                else{
+
+                    val api = Network.getReviewApi()
+                    val callTargetResponse: Call<Unit> =
+                        api.edit(
+                            token = "Bearer ${Network.token}",
+                            movieId = movieId,
+                            id = myReview!!.id,
+                            body = ReviewRequestBody(
+                                reviewText = reviewText,
+                                rating = count,
+                                isAnonymous = isAnonymous
+                            )
+                        )
+
+
+                    callTargetResponse.enqueue(object : Callback<Unit> {
+
+                        override fun onResponse(
+                            call: Call<Unit>, response: Response<Unit>
+                        ) {
+                            if(response.isSuccessful){
+                            isUpdated.value = false
+                            dialogIsOpen.value = false}
+                            else navController.navigate("signIn_screen")
+
+                        }
+
+                        override fun onFailure(call: Call<Unit>, t: Throwable) {
+                            navController.navigate("signIn_screen")
+                        }
+
+                    })
+
+
+                }
+
+
+
                              },
                 modifier = Modifier
-                .fillMaxWidth(1f)
-                .height(40.dp),
+                    .fillMaxWidth(1f)
+                    .height(40.dp),
                 colors =
                     ButtonDefaults.buttonColors(
                         backgroundColor = MaterialTheme.colors.primary
@@ -354,7 +632,7 @@ fun Dialog(myReview:MutableState<Review?>, dialogIsOpen:MutableState<Boolean>){
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GenreList(genreList: List<String>, modifier: Modifier) {
+fun GenreList(genreList: List<Genre>, modifier: Modifier) {
 
     LazyVerticalGrid(cells = GridCells.Adaptive(75.dp), modifier = modifier)
     {
@@ -367,7 +645,7 @@ fun GenreList(genreList: List<String>, modifier: Modifier) {
                     .height(25.dp),
             ) {
                 Text(
-                    text = item,
+                    text = item.name,
                     style = MaterialTheme.typography.body1,
                     color = White200,
                     modifier = Modifier.padding(5.dp),
@@ -383,10 +661,10 @@ fun GenreList(genreList: List<String>, modifier: Modifier) {
 }
 
 @Composable
-fun ReviewList(reviewList: List<Review>, modifier: Modifier) {
+fun ReviewList(reviewList: List<ReviewDetails>, modifier: Modifier) {
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = modifier) {
-        items(reviewList) { review: Review ->
+        items(reviewList) { review: ReviewDetails ->
             Review(review = review)
         }
 
@@ -394,7 +672,7 @@ fun ReviewList(reviewList: List<Review>, modifier: Modifier) {
 }
 
 @Composable
-fun Review(review: Review, isMy: Boolean = false, onEdit: () -> Unit = {}) {
+fun Review(review: ReviewDetails, isMy: Boolean = false, onEdit: () -> Unit = {},onDelete: () -> Unit = {}) {
 
     Card( border = BorderStroke
         (1.dp, MaterialTheme.colors.secondary),
@@ -422,7 +700,8 @@ fun Review(review: Review, isMy: Boolean = false, onEdit: () -> Unit = {}) {
 
                     Image(
                         modifier = Modifier.size(40.dp),
-                        painter = painterResource(id = review.author.avatar),
+                        painter = if(review.author.avatar!=null) rememberAsyncImagePainter(model = review.author.avatar)
+                        else painterResource(id = R.drawable.profile_image),
                         contentDescription = "avatar"
                     )
                     Column(Modifier.padding(start = 10.dp)) {
@@ -442,7 +721,7 @@ fun Review(review: Review, isMy: Boolean = false, onEdit: () -> Unit = {}) {
 
 
                 Spacer(modifier = Modifier.weight(1f))
-                RatingIcon(rating = review.rating,
+                RatingIcon(rating = review.rating.toDouble(),
                     isReview = true,
                     modifier = Modifier
                         .padding(start = 5.dp, end = 5.dp)
@@ -477,7 +756,7 @@ fun Review(review: Review, isMy: Boolean = false, onEdit: () -> Unit = {}) {
                         imageVector = Icons.Filled.Close,
                         contentDescription = "deleteReview",
                         Modifier
-                            .clickable(onClick = {}),
+                            .clickable(onClick = onDelete),
                         tint = Color.Red
                     )
 
@@ -509,10 +788,5 @@ fun DetailRow(name: String, value: String) {
     }
 }
 
-@Composable
-@Preview
-fun Pre() {
-    MovieCatalogTheme {
-        MovieScreen(navController = rememberNavController())
-    }
-}
+
+
